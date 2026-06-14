@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Raízes Cartográficas
 
-## Getting Started
+Uma plataforma de mapeamento cultural pensada como um organismo vivo — um rizoma de saberes e mestres populares — onde cada nó é uma **porta** para uma fonte real de conhecimento, e não um verbete a ser consumido.
 
-First, run the development server:
+Projeto desenvolvido para a disciplina **Teoria e Futuros do Design**, a partir do cenário especulativo **"A Era do Curupira"**: um futuro em que o design é situado, local e decolonial, e valores como ancestralidade, reciprocidade e Buen Vivir tornam-se estruturantes.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## User story do MVP
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> Como alguém que quer se aproximar de um saber popular, quero atravessar de um mestre/saber a outro declarando minha intenção, para chegar à fonte real de forma respeitosa — e não consumir o saber como conteúdo pronto.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+O gesto central é **"puxar um fio com licença"**: navegar de um saber a outro declarando a intenção (aprender, pesquisar ou inspirar), atravessando portas que pertencem a quem detém o conhecimento.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Princípios de design
 
-## Learn More
+- **A porta, não o verbete.** Cada saber é uma porta para uma fonte real; a tela mostra o *rosto* do saber (o que é, quem o guarda, como chegar), nunca a *técnica* transmissível. Anti-consumo por design.
+- **Curadoria pela fonte.** Quem cria e controla cada porta é quem detém o saber — mestres, mestras, comunidades e associações. Consentimento e autoria embutidos.
+- **Reciprocidade visível.** Atravessar deixa rastro; o visitante declara o que devolve (crédito, presença, remuneração).
+- **Dois papéis.** Quem *busca* (designers, pesquisadores) tem perfil; quem *guarda* tem curadoria — nunca um "usuário" genérico.
+- **IA na camada meta.** A IA ajuda a formular um pedido respeitoso e a sugerir conexões — nunca narra nem resume o saber.
 
-To learn more about Next.js, take a look at the following resources:
+## Stack técnica
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js** (App Router, TypeScript, Tailwind CSS)
+- **Supabase** (banco de dados Postgres + autenticação)
+- **Vercel** (deploy)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Status
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Em desenvolvimento — MVP da funcionalidade central (navegação porta → fio → licença).
