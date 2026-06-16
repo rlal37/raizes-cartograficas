@@ -15,20 +15,22 @@ type Saber = {
   com_quem: string | null
   pede: string | null
   credito: string | null
+  aberto: boolean | null
+  canal: string | null
 }
 
 type SaberResumo = { id: string; nome: string; territorio: string | null }
+type Intencao = 'aprender' | 'pesquisar' | 'inspirar'
+
 type OfertaComNome = {
   id: number
   palavra: string
   criado_em: string
   autor: { nome: string | null } | null
 }
-type Intencao = 'aprender' | 'pesquisar' | 'inspirar'
 
-// 👈 A "COSTURA": por enquanto as perguntas são fixas, escolhidas pela intenção.
-// Quando plugarmos a IA real, só esta função muda — ela passará a buscar da API.
-// Repare: as perguntas falam do PEDIDO de quem busca, nunca do conteúdo do saber.
+// A "COSTURA" da camada meta: perguntas fixas por enquanto.
+// Quando plugarmos a IA real, SÓ esta função muda.
 function perguntasPara(intencao: Intencao, nomeDestino: string): string[] {
   if (intencao === 'aprender') {
     return [
@@ -48,6 +50,14 @@ function perguntasPara(intencao: Intencao, nomeDestino: string): string[] {
   ]
 }
 
+// frase de intenção usada no rascunho de proposta
+function fraseIntencao(p: Intencao | ''): string {
+  if (p === 'aprender') return ' Minha intenção é aprender com esta fonte.'
+  if (p === 'pesquisar') return ' Minha intenção é pesquisar este saber.'
+  if (p === 'inspirar') return ' Minha intenção é me inspirar neste saber.'
+  return ''
+}
+
 export default function PortaPage() {
   const params = useParams()
   const router = useRouter()
@@ -62,10 +72,15 @@ export default function PortaPage() {
   const [outros, setOutros] = useState<SaberResumo[]>([])
   const [destinoId, setDestinoId] = useState<string>('')
   const [intencao, setIntencao] = useState<Intencao | ''>('')
-  const [palavra, setPalavra] = useState('')          // 👈 a palavra que a pessoa escreve
+  const [palavra, setPalavra] = useState('')
+  const [posturaURL, setPosturaURL] = useState<Intencao | ''>('') // postura vinda da home
   const [puxando, setPuxando] = useState(false)
   const [aviso, setAviso] = useState('')
   const [copiado, setCopiado] = useState(false)
+
+  // ---- estado do "propor projeto" ----
+  const [propostaAberta, setPropostaAberta] = useState(false)
+  const [copiadoProposta, setCopiadoProposta] = useState(false)
 
   useEffect(() => {
     async function buscar() {
@@ -75,6 +90,7 @@ export default function PortaPage() {
         .eq('id', id)
         .single()
       setSaber(data)
+
       // Palavras deixadas nesta porta (públicas), com o nome de quem deixou.
       const { data: deixadas } = await supabase
         .from('ofertas')
@@ -88,29 +104,49 @@ export default function PortaPage() {
     buscar()
   }, [id])
 
-async function copiarCredito() {
+  // Lê a postura herdada da home (?postura=...), uma vez ao abrir a porta.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('postura')
+    if (p === 'aprender' || p === 'pesquisar' || p === 'inspirar') {
+      setPosturaURL(p)
+    }
+  }, [])
+
+  async function copiarCredito() {
     if (!saber?.credito) return
     try {
       await navigator.clipboard.writeText(saber.credito)
       setCopiado(true)
-      setTimeout(() => setCopiado(false), 2000) // volta ao normal depois de 2s
+      setTimeout(() => setCopiado(false), 2000)
     } catch {
       // alguns navegadores bloqueiam a cópia automática; ignora sem quebrar
     }
   }
 
-  async function abrirModal() {
-    // Deslogado? Nem abre o modal — a licença exige identidade. Vai direto pro login.
-    const { data: sessao } = await supabase.auth.getSession()
-    if (!sessao.session) {
-      router.push('/entrar')
-      return
+  // texto do rascunho que a plataforma levaria à fonte
+  function rascunhoProposta(): string {
+    return (
+      'Olá. Conheci seu trabalho pelo Raízes Cartográficas e sou designer.' +
+      fraseIntencao(posturaURL) +
+      ' Gostaria de propor uma colaboração, com crédito e nas suas condições. Podemos conversar?'
+    )
+  }
+
+  async function copiarProposta() {
+    try {
+      await navigator.clipboard.writeText(rascunhoProposta())
+      setCopiadoProposta(true)
+      setTimeout(() => setCopiadoProposta(false), 2000)
+    } catch {
+      // ignora
     }
-    
+  }
+
+  async function abrirModal() {
     setAviso('')
     setDestinoId('')
-    setIntencao('')
-    setPalavra('')                                     // 👈 limpa a palavra ao abrir
+    setIntencao(posturaURL) // pré-seleciona a postura herdada da home
+    setPalavra('')
 
     const { data } = await supabase
       .from('saberes')
@@ -122,7 +158,6 @@ async function copiarCredito() {
     setModalAberto(true)
   }
 
-  // 👈 o nome do destino escolhido (pra montar as perguntas)
   const nomeDestino = outros.find((o) => o.id === destinoId)?.nome ?? ''
 
   async function confirmarFio() {
@@ -142,7 +177,6 @@ async function copiarCredito() {
     setPuxando(true)
     const userId = sessao.session.user.id
 
-    // grava o rastro (a passagem)
     const { error: erroRastro } = await supabase.from('rastros').insert({
       buscador_id: userId,
       saber_origem_id: id,
@@ -156,7 +190,6 @@ async function copiarCredito() {
       return
     }
 
-    // 👈 se a pessoa escreveu uma palavra, grava como OFERTA na porta de destino
     if (palavra.trim()) {
       await supabase.from('ofertas').insert({
         buscador_id: userId,
@@ -196,12 +229,45 @@ async function copiarCredito() {
           {saber.quando && <p className="opacity-80">{saber.quando}</p>}
         </section>
       )}
+
+      {/* Canal da fonte + propor projeto (só fontes abertas têm o botão) */}
+      {saber.canal && (
+        <section className="mb-5">
+          <p className="text-sm opacity-80 border-l-2 pl-3">{saber.canal}</p>
+
+          {saber.aberto && !propostaAberta && (
+            <button
+              onClick={() => setPropostaAberta(true)}
+              className="border px-4 py-2 rounded mt-3"
+            >
+              Propor um projeto a esta fonte
+            </button>
+          )}
+
+          {saber.aberto && propostaAberta && (
+            <div className="border rounded p-4 mt-3 text-sm">
+              <p className="opacity-60 mb-2">
+                Rascunho que a plataforma levaria à fonte (você revisa antes):
+              </p>
+              <p className="italic mb-3">“{rascunhoProposta()}”</p>
+              <button
+                onClick={copiarProposta}
+                className="border px-3 py-1 rounded"
+              >
+                {copiadoProposta ? 'Copiado ✓' : 'Copiar rascunho'}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
       {saber.pede && (
         <section className="mb-5">
           <h2 className="text-sm font-semibold opacity-60 mb-1">O que pede</h2>
           <p>{saber.pede}</p>
         </section>
       )}
+
       {saber.credito && (
         <section className="mb-8">
           <h2 className="text-sm font-semibold opacity-60 mb-1">Crédito</h2>
@@ -218,6 +284,7 @@ async function copiarCredito() {
       <button onClick={abrirModal} className="border px-4 py-2 rounded">
         Puxar um fio com licença
       </button>
+
       {/* Reciprocidade visível: as palavras deixadas nesta porta */}
       <section className="mt-10">
         <h2 className="text-sm font-semibold opacity-60 mb-3">
@@ -257,7 +324,6 @@ async function copiarCredito() {
               De <strong>{saber.nome}</strong>, para onde você segue — e com que intenção?
             </p>
 
-            {/* Passo 1: destino */}
             <label className="block mb-4">
               <span className="block text-sm mb-1">Para onde o fio vai</span>
               <select
@@ -274,7 +340,6 @@ async function copiarCredito() {
               </select>
             </label>
 
-            {/* Passo 2: intenção (a licença) */}
             <span className="block text-sm mb-1">Com qual intenção</span>
             <div className="flex gap-2 mb-5">
               {(['aprender', 'pesquisar', 'inspirar'] as Intencao[]).map((op) => (
@@ -291,8 +356,6 @@ async function copiarCredito() {
               ))}
             </div>
 
-            {/* 👈 Passo 3: camada meta — perguntas pra ajudar a formular a palavra.
-                Só aparece depois que destino e intenção foram escolhidos. */}
             {destinoId && intencao && (
               <div className="mb-5 border-t pt-4">
                 <p className="text-sm font-semibold mb-2">
