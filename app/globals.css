@@ -29,10 +29,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* container central de cada página */
 .wrap { max-width: 740px; margin: 0 auto; padding: 18px 20px 80px; }
 
-/* rótulo "eyebrow" minúsculo com espaçamento */
 .eyebrow {
   font-family: var(--display);
   font-weight: 800;
@@ -62,36 +60,176 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='14'%3E%3Cpath d='M0 7 Q11 0 22 7 T44 7' stroke='%235C4A37' stroke-width='1.4' fill='none' opacity='0.5'/%3E%3C/svg%3E");
 }
 
-/* ribbon: "a porta se abriu" */
+/* ribbon */
 .ribbon {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--mata);
-  background: rgba(75, 107, 58, 0.12);
-  border-radius: 999px;
-  padding: 9px 18px;
-  margin: 0 0 16px;
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 600; font-size: 14px;
+  color: var(--mata); background: rgba(75, 107, 58, 0.12);
+  border-radius: 999px; padding: 9px 18px; margin: 0 0 16px;
   animation: bloom .6s ease both;
 }
 @keyframes bloom { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
 
-/* vinhas (a "renda" que costura os saberes) */
+/* vinhas */
 .vine { display: block; width: 100%; height: 30px; overflow: visible; }
 .vine-sm path {
-  stroke-dasharray: 120;
-  stroke-dashoffset: 120;
+  stroke-dasharray: 120; stroke-dashoffset: 120;
   animation: grow .8s ease forwards;
   animation-delay: calc(var(--i, 0) * .09s + .15s);
 }
 @keyframes grow { to { stroke-dashoffset: 0; } }
-
 .draw-in { animation: drawIn .5s ease both; animation-delay: calc(var(--i) * .09s); }
 @keyframes drawIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
-
 @media (prefers-reduced-motion: reduce) {
   .draw-in, .vine-sm path { animation: none; stroke-dashoffset: 0; }
 }
+
+/* ---------- PORTA ---------- */
+.card {
+  position: relative; background: rgba(255, 250, 240, 0.55);
+  border: 2px solid var(--ink); border-radius: 26px;
+  padding: 26px 26px 24px; box-shadow: 0 2px 0 rgba(36, 26, 18, 0.06);
+}
+.porta { border-color: var(--accent, var(--ink)); }
+.porta-tag {
+  font-family: var(--display); font-weight: 600; font-size: 12px;
+  letter-spacing: .08em; text-transform: lowercase;
+  color: var(--accent, var(--indigo));
+  display: flex; align-items: center; gap: 8px; margin: 0 0 8px;
+}
+.porta h1 {
+  font-family: var(--display); font-weight: 800;
+  font-size: clamp(29px, 6vw, 44px); line-height: 1.02;
+  margin: 0 0 8px; color: var(--ink);
+}
+.terr { font-size: 14px; color: var(--ink-soft); margin: 0 0 16px; font-style: italic; }
+.consent {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: #fff;
+  background: var(--mata); padding: 6px 14px; border-radius: 999px;
+}
+.sobre { font-size: 15.5px; line-height: 1.62; margin: 10px 2px 0; }
+.face-note {
+  font-size: 13.5px; color: var(--ink-soft); font-style: italic;
+  margin: 12px 2px 0; padding-left: 12px; border-left: 2px solid var(--ocre);
+}
+.chegar { margin: 12px 2px 0; }
+.chegar .row {
+  display: flex; gap: 10px; padding: 7px 0;
+  border-bottom: 1px dotted var(--linha); font-size: 14.5px;
+}
+.chegar .row:last-child { border-bottom: none; }
+.chegar .k { font-family: var(--display); font-weight: 600; color: var(--indigo); flex: 0 0 96px; }
+.chegar .v { flex: 1; }
+
+.contato { margin: 14px 2px 0; }
+.btn-contato {
+  font-family: var(--display); font-weight: 700; font-size: 15px; cursor: pointer;
+  color: #fff; background: var(--indigo); border: none;
+  padding: 13px 18px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 9px;
+}
+.btn-contato:hover, .btn-contato:focus-visible { background: #22315a; outline: none; }
+.presenca {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 14.5px; color: var(--ink-soft);
+  background: rgba(44, 62, 102, 0.06); border-radius: 16px; padding: 13px 16px;
+}
+.proposta {
+  margin-top: 12px; background: rgba(44, 62, 102, 0.07);
+  border: 2px solid rgba(44, 62, 102, 0.25); border-radius: 18px;
+  padding: 15px 17px; font-size: 14.5px; line-height: 1.55;
+}
+.proposta .pt {
+  font-family: var(--display); font-weight: 600; font-size: 11.5px;
+  letter-spacing: .05em; text-transform: lowercase; color: var(--indigo); margin: 0 0 7px;
+}
+.proposta .draft { font-style: italic; }
+
+.credito-box { margin-top: 10px; background: rgba(181, 83, 46, 0.07); border-radius: 16px; padding: 13px 15px; }
+.credito-box .line {
+  font-size: 14px; background: rgba(255, 250, 240, 0.7);
+  border-radius: 10px; padding: 10px 12px; margin: 0 0 8px;
+}
+.btn-copy {
+  font-family: var(--display); font-weight: 600; font-size: 13px; cursor: pointer;
+  background: transparent; border: 1.5px solid var(--terra); color: var(--terra);
+  padding: 7px 14px; border-radius: 999px;
+}
+.btn-copy:hover, .btn-copy:focus-visible { background: rgba(181, 83, 46, 0.1); outline: none; }
+
+/* botão principal em pílula terra */
+.atravessar {
+  margin-top: 18px; width: 100%; cursor: pointer;
+  font-family: var(--display); font-weight: 800; font-size: 17px; color: #fff;
+  background: var(--terra); border: none; padding: 16px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.atravessar:hover, .atravessar:focus-visible { background: #9c4424; outline: none; }
+.atravessar:disabled { opacity: .6; cursor: default; }
+
+/* palavras deixadas */
+.palavras { margin-top: 6px; }
+.palavra-item {
+  display: flex; gap: 11px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px dotted var(--linha); font-size: 14.5px;
+}
+.palavra-item:last-child { border-bottom: none; }
+.palavra-item .autor { display: block; color: var(--ink-soft); font-size: 13px; margin-top: 3px; }
+.empty { font-size: 14.5px; color: var(--ink-soft); font-style: italic; margin: 8px 2px 0; }
+
+/* ---------- MODAL / LICENÇA ---------- */
+.overlay {
+  position: fixed; inset: 0; background: rgba(36, 26, 18, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+}
+.lic {
+  background: var(--palha); border: 2px solid var(--ocre); border-radius: 26px;
+  padding: 24px; max-width: 480px; width: 100%; max-height: 86vh; overflow: auto;
+  box-shadow: 0 10px 40px rgba(36, 26, 18, 0.25);
+}
+.back {
+  background: transparent; border: none; cursor: pointer;
+  font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--terra);
+  padding: 0; margin: 0 0 16px;
+}
+.lic .kicker { font-size: 13px; color: var(--ink-soft); margin: 0 0 2px; }
+.lic h2 {
+  font-family: var(--display); font-weight: 800;
+  font-size: clamp(22px, 5vw, 30px); line-height: 1.05; margin: 0 0 8px; color: var(--ink);
+}
+.lic .intro { font-size: 14.5px; margin: 0 0 16px; color: var(--ink-soft); }
+.field-lbl {
+  display: block; font-family: var(--display); font-weight: 600; font-size: 13px;
+  letter-spacing: .04em; text-transform: lowercase; color: var(--ink-soft); margin: 0 0 6px;
+}
+.select, .textarea {
+  width: 100%; border: 1.5px solid var(--linha); border-radius: 14px;
+  padding: 12px 14px; font-family: var(--body); font-size: 15px;
+  background: rgba(255, 250, 240, 0.6); color: var(--ink);
+}
+.select { margin-bottom: 16px; }
+.textarea { resize: vertical; }
+.select:focus, .textarea:focus { border-color: var(--ocre); outline: none; }
+.int {
+  display: flex; align-items: center; gap: 13px; width: 100%; text-align: left; cursor: pointer;
+  background: rgba(255, 250, 240, 0.6); border: 1.5px solid var(--linha);
+  padding: 14px 16px; margin: 9px 0; font-family: var(--body); font-size: 16px;
+  color: var(--ink); border-radius: 18px;
+}
+.int:hover, .int:focus-visible { border-color: var(--ocre); outline: none; }
+.int[aria-pressed="true"] { border-color: var(--ocre); background: rgba(201, 138, 30, 0.18); font-weight: 700; }
+.int .ico { flex: 0 0 auto; display: inline-flex; }
+.sug {
+  margin-top: 18px; background: rgba(44, 62, 102, 0.07);
+  border: 2px solid rgba(44, 62, 102, 0.25); border-radius: 18px; padding: 15px 17px;
+}
+.sug .sug-tag {
+  font-family: var(--display); font-weight: 600; font-size: 11.5px;
+  letter-spacing: .05em; text-transform: lowercase; color: var(--indigo); margin: 0 0 8px;
+}
+.sug ul { margin: 0 0 14px; padding-left: 18px; }
+.sug li { font-size: 14.5px; line-height: 1.5; margin: 4px 0; }
+.aviso { font-size: 14px; color: var(--terra); margin: 12px 0 0; }
+
+@media (max-width: 540px) { .chegar .k { flex-basis: 80px; } }
