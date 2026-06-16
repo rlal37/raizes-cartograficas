@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Flower, Knot, Arrow, Divider, Ribbon } from '@/components/Organicos'
 
 type Saber = {
   id: string
@@ -28,6 +29,45 @@ type OfertaComNome = {
   criado_em: string
   autor: { nome: string | null } | null
 }
+
+// ícones de intenção (vindos do protótipo)
+function IconAprender() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 21 V 11" stroke="var(--terra)" strokeWidth="2" strokeLinecap="round" />
+      <path d="M12 13 C 6 13 4 8 5 4 C 10 5 12 9 12 13Z" fill="var(--mata)" />
+      <path d="M12 14 C 17 14 19 10 18 7 C 14 8 12 11 12 14Z" fill="var(--mata)" opacity="0.8" />
+    </svg>
+  )
+}
+function IconPesquisar() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M19 12 a7 7 0 1 1 -4 -6.3" stroke="var(--terra)" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="3" fill="var(--ocre)" />
+    </svg>
+  )
+}
+function IconInspirar() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.2" fill="var(--ocre)" />
+      <g fill="var(--terra)">
+        <ellipse cx="12" cy="5" rx="2.4" ry="3.4" />
+        <ellipse cx="12" cy="19" rx="2.4" ry="3.4" />
+        <ellipse cx="5" cy="12" rx="3.4" ry="2.4" />
+        <ellipse cx="19" cy="12" rx="3.4" ry="2.4" />
+      </g>
+    </svg>
+  )
+}
+
+// rótulos ricos na superfície; chaves do banco por baixo
+const INTENCOES: { key: Intencao; label: string; icon: React.ReactNode }[] = [
+  { key: 'aprender', label: 'Aprender uma técnica', icon: <IconAprender /> },
+  { key: 'pesquisar', label: 'Fazer pesquisa', icon: <IconPesquisar /> },
+  { key: 'inspirar', label: 'Buscar inspiração', icon: <IconInspirar /> },
+]
 
 // A "COSTURA" da camada meta: perguntas fixas por enquanto.
 // Quando plugarmos a IA real, SÓ esta função muda.
@@ -77,6 +117,7 @@ export default function PortaPage() {
   const [puxando, setPuxando] = useState(false)
   const [aviso, setAviso] = useState('')
   const [copiado, setCopiado] = useState(false)
+  const [chegou, setChegou] = useState(false)
 
   // ---- estado do "propor projeto" ----
   const [propostaAberta, setPropostaAberta] = useState(false)
@@ -104,11 +145,15 @@ export default function PortaPage() {
     buscar()
   }, [id])
 
-  // Lê a postura herdada da home (?postura=...), uma vez ao abrir a porta.
+  // Lê a postura herdada da home (?postura=...) e o marcador de chegada (?chegou=1).
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get('postura')
+    const sp = new URLSearchParams(window.location.search)
+    const p = sp.get('postura')
     if (p === 'aprender' || p === 'pesquisar' || p === 'inspirar') {
       setPosturaURL(p)
+    }
+    if (sp.get('chegou') === '1') {
+      setChegou(true)
     }
   }, [])
 
@@ -199,202 +244,184 @@ export default function PortaPage() {
     }
 
     setPuxando(false)
-    router.push('/saber/' + destinoId)
+    router.push('/saber/' + destinoId + '?chegou=1' + (intencao ? '&postura=' + intencao : ''))
   }
 
-  if (carregando) return <p className="p-8">Abrindo a porta...</p>
-  if (!saber) return <p className="p-8">Essa porta não foi encontrada.</p>
+  if (carregando) return <main className="wrap"><p className="empty">Abrindo a porta…</p></main>
+  if (!saber) return <main className="wrap"><p className="empty">Essa porta não foi encontrada.</p></main>
 
   return (
-    <main className="p-8 max-w-2xl mx-auto">
-      <p className="text-sm opacity-60">{saber.territorio}</p>
-      <h1 className="text-3xl font-bold mb-6">{saber.nome}</h1>
+    <main className="wrap">
+      {chegou && <Ribbon>a porta se abriu — você atravessou com licença</Ribbon>}
 
-      {saber.sobre && (
-        <section className="mb-5">
-          <h2 className="text-sm font-semibold opacity-60 mb-1">O que é</h2>
-          <p>{saber.sobre}</p>
-        </section>
-      )}
-      {saber.com_quem && (
-        <section className="mb-5">
-          <h2 className="text-sm font-semibold opacity-60 mb-1">Quem guarda</h2>
-          <p>{saber.com_quem}</p>
-        </section>
-      )}
-      {(saber.onde || saber.quando) && (
-        <section className="mb-5">
-          <h2 className="text-sm font-semibold opacity-60 mb-1">Como chegar</h2>
-          {saber.onde && <p>{saber.onde}</p>}
-          {saber.quando && <p className="opacity-80">{saber.quando}</p>}
-        </section>
-      )}
+      <div
+        className="card porta"
+        style={{ '--accent': saber.cor || 'var(--ink)' } as React.CSSProperties}
+      >
+        <p className="porta-tag">◖ porta aberta · curada pela fonte</p>
+        <h1>{saber.nome}</h1>
+        {saber.territorio && <p className="terr">{saber.territorio}</p>}
+        <span className="consent">
+          <Flower color="#fff" /> mantida pela fonte · com licença
+        </span>
 
-      {/* Canal da fonte + propor projeto (só fontes abertas têm o botão) */}
-      {saber.canal && (
-        <section className="mb-5">
-          <p className="text-sm opacity-80 border-l-2 pl-3">{saber.canal}</p>
+        {saber.sobre && (
+          <>
+            <Divider label="sobre este saber" />
+            <p className="sobre">{saber.sobre}</p>
+          </>
+        )}
+        <p className="face-note">
+          A técnica não cabe nesta tela — ela vive nas mãos de quem faz. Aqui você
+          conhece o saber e quem o guarda, para chegar sabendo o que pedir.
+        </p>
 
-          {saber.aberto && !propostaAberta && (
-            <button
-              onClick={() => setPropostaAberta(true)}
-              className="border px-4 py-2 rounded mt-3"
-            >
-              Propor um projeto a esta fonte
-            </button>
+        <Divider label="como chegar" />
+        <div className="chegar">
+          {saber.onde && (
+            <div className="row"><span className="k">onde</span><span className="v">{saber.onde}</span></div>
           )}
+          {saber.quando && (
+            <div className="row"><span className="k">quando</span><span className="v">{saber.quando}</span></div>
+          )}
+          {saber.com_quem && (
+            <div className="row"><span className="k">com quem</span><span className="v">{saber.com_quem}</span></div>
+          )}
+        </div>
 
-          {saber.aberto && propostaAberta && (
-            <div className="border rounded p-4 mt-3 text-sm">
-              <p className="opacity-60 mb-2">
-                Rascunho que a plataforma levaria à fonte (você revisa antes):
-              </p>
-              <p className="italic mb-3">“{rascunhoProposta()}”</p>
-              <button
-                onClick={copiarProposta}
-                className="border px-3 py-1 rounded"
-              >
-                {copiadoProposta ? 'Copiado ✓' : 'Copiar rascunho'}
+        {/* Canal da fonte + propor projeto (só fontes abertas têm o botão) */}
+        {saber.canal && (
+          <div className="contato">
+            {saber.aberto ? (
+              propostaAberta ? (
+                <div className="proposta">
+                  <p className="pt">◖ rascunho que a plataforma levaria à fonte (você revisa antes)</p>
+                  <p className="draft">“{rascunhoProposta()}”</p>
+                  <button className="btn-copy" onClick={copiarProposta}>
+                    {copiadoProposta ? 'copiado ✓' : 'copiar rascunho'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="presenca" style={{ background: 'rgba(75,107,58,0.08)', marginBottom: 12 }}>
+                    <Flower color="var(--mata)" /><span>{saber.canal}</span>
+                  </div>
+                  <button className="btn-contato" onClick={() => setPropostaAberta(true)}>
+                    <Arrow color="#fff" /> propor um projeto a esta fonte
+                  </button>
+                </>
+              )
+            ) : (
+              <div className="presenca">
+                <Knot color="var(--indigo)" /><span>{saber.canal}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {saber.pede && (
+          <>
+            <Divider label="o que esta fonte pede" />
+            <p className="sobre">{saber.pede}</p>
+          </>
+        )}
+
+        {saber.credito && (
+          <>
+            <Divider label="como creditar" />
+            <div className="credito-box">
+              <p className="line">{saber.credito}</p>
+              <button className="btn-copy" onClick={copiarCredito}>
+                {copiado ? 'copiado ✓' : 'copiar crédito'}
               </button>
             </div>
-          )}
-        </section>
-      )}
+          </>
+        )}
 
-      {saber.pede && (
-        <section className="mb-5">
-          <h2 className="text-sm font-semibold opacity-60 mb-1">O que pede</h2>
-          <p>{saber.pede}</p>
-        </section>
-      )}
-
-      {saber.credito && (
-        <section className="mb-8">
-          <h2 className="text-sm font-semibold opacity-60 mb-1">Crédito</h2>
-          <p className="text-sm opacity-80 mb-2">{saber.credito}</p>
-          <button
-            onClick={copiarCredito}
-            className="border px-3 py-1 rounded text-sm"
-          >
-            {copiado ? 'Copiado ✓' : 'Copiar crédito'}
-          </button>
-        </section>
-      )}
-
-      <button onClick={abrirModal} className="border px-4 py-2 rounded">
-        Puxar um fio com licença
-      </button>
+        <button className="atravessar" onClick={abrirModal}>
+          <Arrow color="#fff" /> puxar um fio com licença
+        </button>
+      </div>
 
       {/* Reciprocidade visível: as palavras deixadas nesta porta */}
-      <section className="mt-10">
-        <h2 className="text-sm font-semibold opacity-60 mb-3">
-          Palavras deixadas aqui
-        </h2>
-
+      <Divider label="palavras deixadas aqui" />
+      <div className="palavras">
         {ofertas.length === 0 ? (
-          <p className="text-sm opacity-50">
-            Ninguém deixou palavra nesta porta ainda.
-          </p>
+          <p className="empty">Ninguém deixou palavra nesta porta ainda.</p>
         ) : (
-          <ul className="space-y-3">
-            {ofertas.map((o) => (
-              <li key={o.id} className="border-l-2 pl-3 text-sm">
-                <p>{o.palavra}</p>
-                <p className="opacity-50 mt-1">
-                  — {o.autor?.nome?.trim() || 'alguém que passou por aqui'}
-                </p>
-              </li>
-            ))}
-          </ul>
+          ofertas.map((o) => (
+            <div className="palavra-item" key={o.id}>
+              <Flower color="var(--mata)" />
+              <span>
+                {o.palavra}
+                <span className="autor">— {o.autor?.nome?.trim() || 'alguém que passou por aqui'}</span>
+              </span>
+            </div>
+          ))
         )}
-      </section>
+      </div>
 
       {/* ---- MODAL ---- */}
       {modalAberto && (
-        <div
-          onClick={() => setModalAberto(false)}
-          className="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-lg max-w-md w-full p-6 max-h-[85vh] overflow-auto"
-          >
-            <h2 className="text-xl font-bold mb-1">Puxar um fio</h2>
-            <p className="text-sm opacity-70 mb-4">
-              De <strong>{saber.nome}</strong>, para onde você segue — e com que intenção?
+        <div className="overlay" onClick={() => setModalAberto(false)}>
+          <div className="lic" onClick={(e) => e.stopPropagation()}>
+            <button className="back" onClick={() => setModalAberto(false)}>← fechar</button>
+            <p className="kicker">você quer puxar um fio a partir de</p>
+            <h2>{saber.nome}</h2>
+            <p className="intro">
+              Escolha o destino e declare sua intenção. Esse é o seu pedir licença.
             </p>
 
-            <label className="block mb-4">
-              <span className="block text-sm mb-1">Para onde o fio vai</span>
-              <select
-                value={destinoId}
-                onChange={(e) => setDestinoId(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="">Escolha um saber...</option>
-                {outros.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.nome} {o.territorio ? '— ' + o.territorio : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <span className="block text-sm mb-1">Com qual intenção</span>
-            <div className="flex gap-2 mb-5">
-              {(['aprender', 'pesquisar', 'inspirar'] as Intencao[]).map((op) => (
-                <button
-                  key={op}
-                  onClick={() => setIntencao(op)}
-                  className={
-                    'border px-3 py-2 rounded capitalize flex-1 ' +
-                    (intencao === op ? 'bg-black text-white' : '')
-                  }
-                >
-                  {op}
-                </button>
+            <span className="field-lbl">para onde o fio vai</span>
+            <select
+              className="select"
+              value={destinoId}
+              onChange={(e) => setDestinoId(e.target.value)}
+            >
+              <option value="">Escolha um saber…</option>
+              {outros.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.nome} {o.territorio ? '— ' + o.territorio : ''}
+                </option>
               ))}
-            </div>
+            </select>
+
+            <span className="field-lbl">com qual intenção</span>
+            {INTENCOES.map((op) => (
+              <button
+                key={op.key}
+                className="int"
+                aria-pressed={intencao === op.key}
+                onClick={() => setIntencao(op.key)}
+              >
+                <span className="ico">{op.icon}</span> {op.label}
+              </button>
+            ))}
 
             {destinoId && intencao && (
-              <div className="mb-5 border-t pt-4">
-                <p className="text-sm font-semibold mb-2">
-                  Antes de bater nesta porta, pense:
-                </p>
-                <ul className="text-sm opacity-80 list-disc pl-5 mb-3 space-y-1">
+              <div className="sug">
+                <p className="sug-tag">◖ camada meta · ajuda a formular o pedido (não narra o saber)</p>
+                <ul>
                   {perguntasPara(intencao, nomeDestino).map((q, i) => (
                     <li key={i}>{q}</li>
                   ))}
                 </ul>
-                <label className="block">
-                  <span className="block text-sm mb-1">
-                    Sua palavra (fica visível nesta porta — opcional)
-                  </span>
-                  <textarea
-                    value={palavra}
-                    onChange={(e) => setPalavra(e.target.value)}
-                    placeholder="Escreva, com suas palavras, o que você busca neste fio."
-                    rows={3}
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </label>
+                <span className="field-lbl">sua palavra (fica visível nesta porta — opcional)</span>
+                <textarea
+                  className="textarea"
+                  value={palavra}
+                  onChange={(e) => setPalavra(e.target.value)}
+                  placeholder="Escreva, com suas palavras, o que você busca neste fio."
+                  rows={3}
+                />
               </div>
             )}
 
-            {aviso && <p className="text-sm mb-3 opacity-80">{aviso}</p>}
+            {aviso && <p className="aviso">{aviso}</p>}
 
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setModalAberto(false)} className="px-4 py-2 rounded">
-                Cancelar
-              </button>
-              <button
-                onClick={confirmarFio}
-                disabled={puxando}
-                className="border px-4 py-2 rounded"
-              >
-                {puxando ? 'Puxando...' : 'Puxar com licença'}
-              </button>
-            </div>
+            <button className="atravessar" onClick={confirmarFio} disabled={puxando}>
+              <Arrow color="#fff" /> {puxando ? 'puxando…' : 'puxar com licença'}
+            </button>
           </div>
         </div>
       )}
