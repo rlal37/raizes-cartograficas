@@ -1,38 +1,38 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Mulish } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
+  weight: ["400", "600", "800"],
+  variable: "--font-display",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = Mulish({
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-body",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Raízes Cartográficas",
-  description: "Saberes populares como rizoma — puxe um fio com licença.",
+  description: "Um rizoma de saberes populares — não um acervo.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-     <body className="min-h-full flex flex-col">
-  <Nav />
-  {children}
-</body>
+    <html lang="pt-BR" className={`${display.variable} ${body.variable}`}>
+      <body>
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }

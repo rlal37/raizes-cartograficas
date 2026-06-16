@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --palha: #E7D9BF;
+  --ink: #241A12;
+  --ink-soft: #5C4A37;
+  --terra: #B5532E;
+  --indigo: #2C3E66;
+  --ocre: #C98A1E;
+  --mata: #4B6B3A;
+  --linha: rgba(36, 26, 18, 0.16);
+  --display: var(--font-display), "Bricolage Grotesque", sans-serif;
+  --body: var(--font-body), "Mulish", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--palha);
+  background-image:
+    radial-gradient(circle at 50% 0, rgba(255, 250, 240, 0.5), transparent 60%),
+    radial-gradient(rgba(36, 26, 18, 0.04) 1px, transparent 1.4px);
+  background-size: auto, 22px 22px;
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* container central de cada página */
+.wrap { max-width: 740px; margin: 0 auto; padding: 18px 20px 80px; }
+
+/* rótulo "eyebrow" minúsculo com espaçamento */
+.eyebrow {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: .13em;
+  text-transform: lowercase;
+  color: var(--terra);
+  margin: 6px 0;
+}
+
+/* divisor decorativo com onda */
+.divider { display: flex; align-items: center; gap: 12px; margin: 26px 2px 4px; }
+.divider .lbl {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-transform: lowercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.divider .wave {
+  flex: 1;
+  height: 14px;
+  background-repeat: repeat-x;
+  background-position: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='14'%3E%3Cpath d='M0 7 Q11 0 22 7 T44 7' stroke='%235C4A37' stroke-width='1.4' fill='none' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* ribbon: "a porta se abriu" */
+.ribbon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--mata);
+  background: rgba(75, 107, 58, 0.12);
+  border-radius: 999px;
+  padding: 9px 18px;
+  margin: 0 0 16px;
+  animation: bloom .6s ease both;
+}
+@keyframes bloom { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+
+/* vinhas (a "renda" que costura os saberes) */
+.vine { display: block; width: 100%; height: 30px; overflow: visible; }
+.vine-sm path {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: grow .8s ease forwards;
+  animation-delay: calc(var(--i, 0) * .09s + .15s);
+}
+@keyframes grow { to { stroke-dashoffset: 0; } }
+
+.draw-in { animation: drawIn .5s ease both; animation-delay: calc(var(--i) * .09s); }
+@keyframes drawIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .draw-in, .vine-sm path { animation: none; stroke-dashoffset: 0; }
 }
