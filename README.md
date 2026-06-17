@@ -73,4 +73,8 @@ está implementada de forma simulada, pronta para receber IA real como evoluçã
 ---
 
 *Saberes representados (Pernambuco): maracatu de baque virado, coco de roda,
+<<<<<<< HEAD
 cavalo-marinho, mamulengo, barro figurativo e renda renascença.*
+=======
+cavalo-marinho, mamulengo, barro figurativo e renda renascença.*
+>>>>>>> dc4bd8a6b6761429617c2938ab6fc61a5fc64342
