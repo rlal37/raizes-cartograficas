@@ -351,7 +351,29 @@ body {
 .entrar-msg.is-erro { color: var(--terra); background: rgba(181, 83, 46, 0.1); }
 .entrar-msg.is-ok { color: var(--mata); background: rgba(75, 107, 58, 0.12); }
 
+/* ---------- PERFIL ---------- */
+.reframe {
+  font-size: 15px; font-style: italic; color: var(--ink-soft);
+  border-left: 2px solid var(--ocre); padding-left: 12px; margin: 10px 2px 4px;
+}
+.perfil-quem {
+  font-family: var(--display); font-weight: 600; font-size: 13px;
+  letter-spacing: .04em; text-transform: lowercase; color: var(--ink-soft); margin: 0 2px;
+}
+.perfil-form {
+  background: rgba(255, 250, 240, 0.55); border: 2px solid var(--linha);
+  border-radius: 22px; padding: 20px 22px 22px;
+}
+.perfil-acoes { display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+.perfil-salvar { margin-top: 0; width: auto; padding: 13px 22px; }
+.perfil-aviso { font-family: var(--display); font-weight: 600; font-size: 14px; color: var(--mata); }
+.perfil-rodape { margin-top: 28px; }
+
 @media (max-width: 540px) {
   .entry { grid-template-columns: 1fr; }
   .chegar .k { flex-basis: 80px; }
 }
+/* deixar palavra na própria porta */
+.palavra-prompt { font-size: 14.5px; color: var(--ink-soft); margin: 6px 2px 12px; }
+.palavra-acoes { display: flex; align-items: center; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+.palavra-confirma { margin-top: 0; width: auto; padding: 13px 22px; }

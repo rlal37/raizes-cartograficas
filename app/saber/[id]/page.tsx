@@ -123,6 +123,22 @@ export default function PortaPage() {
   const [propostaAberta, setPropostaAberta] = useState(false)
   const [copiadoProposta, setCopiadoProposta] = useState(false)
 
+  // ---- estado do "deixar palavra nesta porta" ----
+  const [palavraAberta, setPalavraAberta] = useState(false)
+  const [palavraAqui, setPalavraAqui] = useState('')
+  const [deixando, setDeixando] = useState(false)
+  const [avisoPalavra, setAvisoPalavra] = useState('')
+
+  // função que recarrega as palavras desta porta (reusada após deixar uma)
+  async function carregarOfertas() {
+    const { data: deixadas } = await supabase
+      .from('ofertas')
+      .select('id, palavra, criado_em, autor:buscadores ( nome )')
+      .eq('saber_id', id)
+      .order('criado_em', { ascending: false })
+    setOfertas((deixadas as unknown as OfertaComNome[]) ?? [])
+  }
+
   useEffect(() => {
     async function buscar() {
       const { data } = await supabase
@@ -132,17 +148,11 @@ export default function PortaPage() {
         .single()
       setSaber(data)
 
-      // Palavras deixadas nesta porta (públicas), com o nome de quem deixou.
-      const { data: deixadas } = await supabase
-        .from('ofertas')
-        .select('id, palavra, criado_em, autor:buscadores ( nome )')
-        .eq('saber_id', id)
-        .order('criado_em', { ascending: false })
-
-      setOfertas((deixadas as unknown as OfertaComNome[]) ?? [])
+      await carregarOfertas()
       setCarregando(false)
     }
     buscar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   // Lê a postura herdada da home (?postura=...) e o marcador de chegada (?chegou=1).
@@ -185,6 +195,38 @@ export default function PortaPage() {
     } catch {
       // ignora
     }
+  }
+
+  // deixar uma palavra NESTA porta (sem atravessar fio)
+  async function deixarPalavra() {
+    setAvisoPalavra('')
+    if (!palavraAqui.trim()) {
+      setAvisoPalavra('Escreva sua palavra antes de deixá-la.')
+      return
+    }
+
+    const { data: sessao } = await supabase.auth.getSession()
+    if (!sessao.session) {
+      router.push('/entrar')
+      return
+    }
+
+    setDeixando(true)
+    const { error } = await supabase.from('ofertas').insert({
+      buscador_id: sessao.session.user.id,
+      saber_id: id,
+      palavra: palavraAqui.trim(),
+    })
+    setDeixando(false)
+
+    if (error) {
+      setAvisoPalavra('Não foi possível deixar sua palavra. Tente de novo.')
+      return
+    }
+
+    setPalavraAqui('')
+    setPalavraAberta(false)
+    await carregarOfertas() // a palavra nova aparece na lista na hora
   }
 
   async function abrirModal() {
@@ -338,6 +380,42 @@ export default function PortaPage() {
           </>
         )}
 
+        {/* Deixar uma palavra NESTA porta (reciprocidade, sem precisar atravessar) */}
+        <Divider label="sua palavra" />
+        {palavraAberta ? (
+          <div>
+            <span className="field-lbl">o que você devolve a esta fonte</span>
+            <textarea
+              className="textarea"
+              value={palavraAqui}
+              onChange={(e) => setPalavraAqui(e.target.value)}
+              placeholder="Firme aqui o que você se compromete a devolver: citar, buscar presencialmente, apoiar e remunerar quem faz…"
+              rows={3}
+            />
+            {avisoPalavra && <p className="aviso">{avisoPalavra}</p>}
+            <div className="palavra-acoes">
+              <button className="atravessar palavra-confirma" onClick={deixarPalavra} disabled={deixando}>
+                <Flower color="#fff" /> {deixando ? 'deixando…' : 'deixar minha palavra'}
+              </button>
+              <button
+                className="btn-soft"
+                onClick={() => { setPalavraAberta(false); setAvisoPalavra('') }}
+              >
+                cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="palavra-prompt">
+              Atravessar deixa um rastro. Firme aqui o que você devolve em troca do que recebe.
+            </p>
+            <button className="btn-soft" onClick={() => setPalavraAberta(true)}>
+              <Flower color="var(--mata)" /> deixar minha palavra de retribuição
+            </button>
+          </>
+        )}
+
         <button className="atravessar" onClick={abrirModal}>
           <Arrow color="#fff" /> puxar um fio com licença
         </button>
@@ -406,7 +484,7 @@ export default function PortaPage() {
                     <li key={i}>{q}</li>
                   ))}
                 </ul>
-                <span className="field-lbl">sua palavra (fica visível nesta porta — opcional)</span>
+                <span className="field-lbl">sua palavra (fica visível na porta de destino — opcional)</span>
                 <textarea
                   className="textarea"
                   value={palavra}

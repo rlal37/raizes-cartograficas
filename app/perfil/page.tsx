@@ -4,12 +4,28 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
+import { Divider, Knot, Flower } from '@/components/Organicos'
+
 type RastroComNomes = {
   id: number
   intencao: string
   criado_em: string
   origem: { nome: string } | null
   destino: { nome: string } | null
+}
+
+type OfertaComSaber = {
+  id: number
+  palavra: string
+  criado_em: string
+  saber: { nome: string } | null
+}
+
+// rótulos ricos pra exibir a intenção (chave do banco por baixo)
+const ROTULO_INTENCAO: Record<string, string> = {
+  aprender: 'aprender uma técnica',
+  pesquisar: 'fazer pesquisa',
+  inspirar: 'buscar inspiração',
 }
 
 export default function PerfilPage() {
@@ -25,6 +41,7 @@ export default function PerfilPage() {
   const [salvando, setSalvando] = useState(false)
   const [aviso, setAviso] = useState('')
   const [rastros, setRastros] = useState<RastroComNomes[]>([])
+  const [ofertas, setOfertas] = useState<OfertaComSaber[]>([])
 
   useEffect(() => {
     async function iniciar() {
@@ -55,7 +72,8 @@ export default function PerfilPage() {
         setNome(buscador.nome ?? '')
         setCaminhada(buscador.caminhada ?? '')
       }
-    // Lê a caminhada: os fios puxados, com os nomes dos saberes.
+
+      // 3) Lê a caminhada: os fios puxados, com os nomes dos saberes.
       const { data: meusRastros } = await supabase
         .from('rastros')
         .select(`
@@ -69,6 +87,15 @@ export default function PerfilPage() {
         .order('criado_em', { ascending: false })
 
       setRastros((meusRastros as unknown as RastroComNomes[]) ?? [])
+
+      // 4) Lê as palavras deixadas (ofertas), com o nome do saber onde ficaram.
+      const { data: minhasOfertas } = await supabase
+        .from('ofertas')
+        .select('id, palavra, criado_em, saber:saberes ( nome )')
+        .eq('buscador_id', user.id)
+        .order('criado_em', { ascending: false })
+
+      setOfertas((minhasOfertas as unknown as OfertaComSaber[]) ?? [])
 
       setCarregando(false)
     }
@@ -96,76 +123,96 @@ export default function PerfilPage() {
   }
 
   if (carregando) {
-    return <p className="p-8">Verificando sua entrada...</p>
+    return <main className="wrap"><p className="empty">Verificando sua entrada…</p></main>
   }
 
   return (
-    <main className="p-8 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Minha caminhada</h1>
-      <p className="text-sm opacity-70 mb-6">Quem busca: {usuario?.email}</p>
+    <main className="wrap">
+      <p className="eyebrow">minha caminhada</p>
+      <p className="perfil-quem">quem busca · {usuario?.email}</p>
 
-      <label className="block mb-4">
-        <span className="block text-sm mb-1">Como você quer ser creditado</span>
+      <p className="reframe">
+        Seu perfil não guarda saberes — guarda suas relações e seus compromissos.
+      </p>
+
+      <Divider label="como você quer ser creditado" />
+      <div className="perfil-form">
+        <label className="field-lbl" htmlFor="nome">nome ou apelido</label>
         <input
+          id="nome"
+          className="campo"
           type="text"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
-          placeholder="Seu nome ou apelido"
-          className="w-full border rounded px-3 py-2"
+          placeholder="Como você assina o que faz"
         />
-      </label>
 
-      <label className="block mb-4">
-        <span className="block text-sm mb-1">O que você anda procurando</span>
+        <label className="field-lbl" htmlFor="caminhada" style={{ marginTop: 14 }}>
+          o que você anda procurando
+        </label>
         <textarea
+          id="caminhada"
+          className="textarea"
           value={caminhada}
           onChange={(e) => setCaminhada(e.target.value)}
           placeholder="Ex.: referências de cultura popular pernambucana para um projeto de identidade visual"
           rows={3}
-          className="w-full border rounded px-3 py-2"
         />
-      </label>
 
-      <div className="flex items-center gap-3">
-        <button
-          onClick={salvar}
-          disabled={salvando}
-          className="border px-4 py-2 rounded"
-        >
-          {salvando ? 'Guardando...' : 'Guardar caminhada'}
-        </button>
-
-        <button onClick={sair} className="border px-4 py-2 rounded">
-          Sair
-        </button>
-
-        {aviso && <span className="text-sm opacity-70">{aviso}</span>}
+        <div className="perfil-acoes">
+          <button className="atravessar perfil-salvar" onClick={salvar} disabled={salvando}>
+            {salvando ? 'guardando…' : 'guardar caminhada'}
+          </button>
+          {aviso && <span className="perfil-aviso">{aviso}</span>}
+        </div>
       </div>
 
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold mb-3">Os fios que você puxou</h2>
-
+      <Divider label="portas que você atravessou" />
+      <div className="palavras">
         {rastros.length === 0 ? (
-          <p className="text-sm opacity-60">
+          <p className="empty">
             Você ainda não puxou nenhum fio. Visite uma porta e puxe o primeiro.
           </p>
         ) : (
-          <ul className="space-y-3">
-            {rastros.map((r) => (
-              <li key={r.id} className="border rounded px-4 py-3 text-sm">
-                <span className="opacity-60">{r.origem?.nome ?? 'entrada direta'}</span>
-                {' → '}
-                <strong>{r.destino?.nome ?? 'saber removido'}</strong>
-                <span className="ml-2 opacity-70">· {r.intencao}</span>
-                <br />
-                <span className="opacity-50">
+          rastros.map((r) => (
+            <div className="palavra-item" key={r.id}>
+              <Knot color="var(--indigo)" />
+              <span>
+                <b>{r.origem?.nome ?? 'entrada direta'}</b> → <b>{r.destino?.nome ?? 'saber removido'}</b>
+                {' · '}{ROTULO_INTENCAO[r.intencao] ?? r.intencao}
+                <span className="autor">
                   {new Date(r.criado_em).toLocaleDateString('pt-BR')}
                 </span>
-              </li>
-            ))}
-          </ul>
+              </span>
+            </div>
+          ))
         )}
-      </section>
+      </div>
+
+      <Divider label="palavras que você deixou" />
+      <div className="palavras">
+        {ofertas.length === 0 ? (
+          <p className="empty">
+            Você ainda não deixou nenhuma palavra de retribuição.
+          </p>
+        ) : (
+          ofertas.map((o) => (
+            <div className="palavra-item" key={o.id}>
+              <Flower color="var(--mata)" />
+              <span>
+                em <b>{o.saber?.nome ?? 'saber removido'}</b>: {o.palavra}
+                <span className="autor">
+                  {new Date(o.criado_em).toLocaleDateString('pt-BR')}
+                </span>
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="perfil-rodape">
+        <button className="btn-soft" onClick={sair}>sair</button>
+      </div>
     </main>
   )
 }
